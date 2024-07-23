@@ -5,26 +5,28 @@ const prompt = require('prompt-sync')();
 
 const Customer = require("./models/customer.js");
 
-const userAction = (input) => {
+const userAction = async (input) => {
+    
     switch(input){
-        case 1:
-            createCustomer();
+        case '1':
+            await createCustomer();
             break;
-        case 2:
-            viewCustomers();
+        case '2':
+            await viewCustomers();
             break;
-        case 3:
-            updateCustomer();
+        case '3':
+            await updateCustomer();
             break;
-        case 4:
-            deleteCustomer();
+        case '4':
+            await deleteCustomer();
             break;
-        // default:
+        default:
+            await disconnect();
 
     }
 }
   
-const showMessage = () => {
+const showMessage = async () => {
     console.log(`
       Welcome to the CRM
   
@@ -34,19 +36,21 @@ const showMessage = () => {
     2. View all customers
     3. Update a customer
     4. Delete a customer
-    5. quit
-  
-  Number of action to run:`);
-  
-  
+    5. quit`);
+    
+    await userAction(prompt('Number of action to run: '));
+    
 }
-  
+
 
 
 const connect = async () => {
     await mongoose.connect(process.env.MONGODB_URL)
     console.log("Connected to MongoDB")
     await runQueries()
+}
+
+const disconnect = async () => {
     await mongoose.disconnect()
     console.log("Disconnected from MongoDB")
     process.exit()
@@ -54,9 +58,8 @@ const connect = async () => {
 
   const runQueries = async () => {
     console.log("Queries running.")
-    showMessage();
-    await viewCustomers();
-      // await find()
+    await showMessage();
+    await createCustomer();
   }
 
   connect();
@@ -68,8 +71,8 @@ const connect = async () => {
 const createCustomer = async () => {
 
     const customerData = {
-        name: "Ali",
-        age: 20,
+        name: prompt('Enter Customer Name: '),
+        age: prompt("Enter Customer Age: "),
     }
 
     const customer = await Customer.create(customerData)
@@ -78,16 +81,16 @@ const createCustomer = async () => {
 
 const viewCustomers = async () => {
     const customers = await Customer.find({});
-    console.log("All todos: ", customers);
+    console.log("All Customers: ", customers);
 }
 
 const updateCustomer = async () => {
-    const id = '669ee39bf33eec7dd63c5b93';
+    const id = prompt("Enter Customer ID");
     const updateCustomer = await Customer.findByIdAndUpdate(
         id,
     { 
-        name: 'Redah',
-        age: 22
+        name: prompt("Enter New Name"),
+        age: prompt("Enter New Age")
      },
     { new: true }
     );
@@ -95,7 +98,7 @@ const updateCustomer = async () => {
 }
 
 const deleteCustomer = async () => {
-    const id = '669ee39bf33eec7dd63c5b93';
+    const id = prompt("Enter Customer ID");
     const delCustomer = await Customer.findByIdAndDelete(id);
     console.log('Removed Customer: ', delCustomer);
 }
